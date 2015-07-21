@@ -12,6 +12,7 @@ def plot_waveform(data,
                   channel=0,
                   spikenum=None,
                   compare=False,
+                  fontsize=16,
                   ):
     if not compare:
         plt.figure(figsize=(16,9))
@@ -31,14 +32,14 @@ def plot_waveform(data,
         wave = normalize_signal(wave,'minmax')
     if type(label) is str:
         h = plt.plot(t,wave.T, label=label)
-        plt.legend()
+        plt.legend(fontsize=fontsize)
     else:
         h = plt.plot(t,wave.T)
     #if not normalize:
-    plt.ylabel(wave.dimensionality)
-    plt.xlabel(t.dimensionality)
+    plt.ylabel(wave.dimensionality,fontsize=fontsize)
+    plt.xlabel(t.dimensionality,fontsize=fontsize)
     if type(label) is list:
-        plt.legend(h,label)
+        plt.legend(h,label,fontsize=fontsize)
 
 def normalize_signal(inp, normtype='minmax'):
     if normtype == 'minmax':
