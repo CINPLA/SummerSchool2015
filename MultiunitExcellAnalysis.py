@@ -10,8 +10,11 @@ def plot_waveform(data,
                   meanchan=False,
                   meanspikes=False,
                   channel=0,
-                  spikenum=None
+                  spikenum=None,
+                  compare=False,
                   ):
+    if not compare:
+        plt.figure(figsize=(16,9))
     unit = get_unit(data)
     wave = unit.spiketrains[0].waveforms
     if spikenum is not None and channel is None:
