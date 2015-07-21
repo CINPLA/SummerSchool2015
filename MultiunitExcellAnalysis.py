@@ -17,6 +17,7 @@ def plot_waveform(data,
         plt.figure(figsize=(16,9))
     unit = get_unit(data)
     wave = unit.spiketrains[0].waveforms
+    t = np.linspace(0,1,50)*qt.s
     if spikenum is not None and channel is None:
         wave = wave[spikenum,:,:]
         label = ['ch0','ch1','ch3','ch3']
@@ -29,12 +30,13 @@ def plot_waveform(data,
     if normalize:
         wave = normalize_signal(wave,'minmax')
     if type(label) is str:
-        h = plt.plot(wave.T, label=label)
+        h = plt.plot(t,wave.T, label=label)
         plt.legend()
     else:
-        h = plt.plot(wave.T)
+        h = plt.plot(t,wave.T)
     #if not normalize:
     plt.ylabel(wave.dimensionality)
+    plt.xlabel(t.dimensionality)
     if type(label) is list:
         plt.legend(h,label)
 
