@@ -21,7 +21,7 @@ def plot_waveform(data,
     t = np.linspace(0,1,50)*qt.s
     if spikenum is not None and channel is None:
         wave = wave[spikenum,:,:]
-        label = ['ch0','ch1','ch3','ch3']
+        label = ['ch0','ch1','ch3','ch4']
     if channel is not None and spikenum is None:
         wave = wave[:,channel,:]
     if spikenum is not None and channel is not None:
