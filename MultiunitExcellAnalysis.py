@@ -4,14 +4,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 import quantities as qt
 
-def plot_waveform(blk, t, u, label):
-    unit = get_unit(blk,t,u)
+def plot_waveform(data,
+                  label=None,
+                  normalize=False,
+                  meanchan=False,
+                  meanall=False,
+                  channel=None,
+                  spikenum=0
+                  ):
+    unit = get_unit(data)
     wave = unit.spiketrains[0].waveforms
-    wave = np.mean(wave[:,0,:].T,axis=1)
-    wave = normalize(wave,'minmax')
-    plt.plot(wave, label=label)
-    plt.legend()
-    
+    if spikenum is not None:
+        wave = wave[spikenum,:,:]
+        label = ['ch0','ch1','ch2','ch3']
+    if channel is not None:
+        wave = wave[:,channel,:]
+    if spikenum is not None and channel is not None:
+        wave = wave[spikenum,channel,:]
+    if meanall:
+        wave = np.mean(wave[:,0,:],axis=0)
+    if normalize:
+        wave = normalize(wave,'minmax')
+    h = plt.plot(wave.T)
+    plt.legend(h,label)
+
 def normalize(inp, normtype='minmax'):
     if normtype == 'minmax':
         return (inp - inp.min())/np.max(inp - inp.min())
@@ -20,7 +36,7 @@ def normalize(inp, normtype='minmax'):
 
 def instantaneous_rate(spikes, dt, window, fs=1e4):
     '''
-    Here 's' is the spikes, the window size of 'window' is 
+    Here 's' is the spikes, the window size of 'window' is
     represented by 'dt', window is a function which takes two inputs
     '''
     t = np.linspace(0, spikes.magnitude.max(), fs)*qt.s
@@ -36,7 +52,7 @@ def causalWindow(sig, tau):
     a = 1./sig
     w = 0 / tau
     indices = np.where(tau >= 0)
-    w[indices] = a**2 * tau[indices] * np.exp(-a * tau[indices]) 
+    w[indices] = a**2 * tau[indices] * np.exp(-a * tau[indices])
     return w
 
 
@@ -47,8 +63,8 @@ def gaussianWindow(sig, tau):
     w = 1.0 / (np.sqrt(2. * np.pi) *  sig) \
     * np.exp(-tau**2 / (2. * sig**2))
     return w
-    
-    
+
+
 def rectangularWindow(dt, t):
     """
     rectangular window
@@ -58,11 +74,11 @@ def rectangularWindow(dt, t):
     w[indices] = 1./dt
     return w
 
-def get_unit(blk, t, u):
-    for tet in blk.recordingchannelgroups:
-        if tet.name == t:
+def get_unit(data):
+    for tet in data['blk'].recordingchannelgroups:
+        if tet.name == data['tetrode']:
             for unit in tet.units:
-                if unit.name == u:
+                if unit.name == data['unit']:
                     return unit
 
 def raster(spikes,ax):
