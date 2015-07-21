@@ -8,27 +8,34 @@ def plot_waveform(data,
                   label=None,
                   normalize=False,
                   meanchan=False,
-                  meanall=False,
-                  channel=None,
-                  spikenum=0
+                  meanspikes=False,
+                  channel=0,
+                  spikenum=None
                   ):
     unit = get_unit(data)
     wave = unit.spiketrains[0].waveforms
-    if spikenum is not None:
+    if spikenum is not None and channel is None:
         wave = wave[spikenum,:,:]
-        label = ['ch0','ch1','ch2','ch3']
-    if channel is not None:
+        label = ['ch0','ch1','ch3','ch3']
+    if channel is not None and spikenum is None:
         wave = wave[:,channel,:]
     if spikenum is not None and channel is not None:
         wave = wave[spikenum,channel,:]
-    if meanall:
-        wave = np.mean(wave[:,0,:],axis=0)
+    if meanspikes:
+        wave = np.mean(wave, axis=0)
     if normalize:
-        wave = normalize(wave,'minmax')
-    h = plt.plot(wave.T)
-    plt.legend(h,label)
+        wave = normalize_signal(wave,'minmax')
+    if type(label) is str:
+        h = plt.plot(wave.T, label=label)
+        plt.legend()
+    else:
+        h = plt.plot(wave.T)
+    #if not normalize:
+    plt.ylabel(wave.dimensionality)
+    if type(label) is list:
+        plt.legend(h,label)
 
-def normalize(inp, normtype='minmax'):
+def normalize_signal(inp, normtype='minmax'):
     if normtype == 'minmax':
         return (inp - inp.min())/np.max(inp - inp.min())
     elif normtype == 'meanstd':
