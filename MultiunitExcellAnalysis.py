@@ -15,7 +15,10 @@ def plot_waveform(data,
                   fontsize=16,
                   ):
     if not compare:
-        plt.figure(figsize=(16,9))
+        f = plt.figure(figsize=(16,9))
+        ax = f.add_subplot(1,1,1)
+    else:
+        ax = compare
     unit = get_unit(data)
     wave = unit.spiketrains[0].waveforms
     t = np.linspace(0,1,50)*qt.ms
@@ -44,6 +47,7 @@ def plot_waveform(data,
     plt.xlabel(t.dimensionality, fontsize=fontsize)
     if type(label) is list:
         plt.legend(h,label, fontsize=fontsize)
+    simpleaxis(ax)
 
 def plot_spiketrain(data,
                     raster=True,
@@ -74,12 +78,13 @@ def plot_spiketrain(data,
         for s in spikes.magnitude:
             ax.vlines(s, 0, 1, color = 'b')
 
-        plt.ylim(-.1,1.1)
+        plt.ylim(0,1.1)
         if nplt > 1:
             ax.set_xticks([])
         else:
             ax.set_xlabel(spikes.dimensionality, fontsize=fontsize)
         ax.set_yticks([])
+        simpleaxis(ax, left=True)
     #count rate
     if histogram:
         ax = f.add_subplot(nplt,1,1+raster)
@@ -91,6 +96,7 @@ def plot_spiketrain(data,
             ax.set_xticks([])
         else:
             ax.set_xlabel(spikes.dimensionality, fontsize=fontsize)
+        simpleaxis(ax)
     #instantaneuos rate
     if rectangular | gaussian | causal:
         wins = []
@@ -110,7 +116,18 @@ def plot_spiketrain(data,
                 ax.set_xticks([])
             else:
                 ax.set_xlabel(t.dimensionality, fontsize=fontsize)
+            simpleaxis(ax)
 
+def simpleaxis(ax, left=False):
+    """
+    Removes axis lines
+    """
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    if left:
+        ax.spines['left'].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
 
 def normalize_signal(inp, normtype='minmax'):
     if normtype == 'minmax':
