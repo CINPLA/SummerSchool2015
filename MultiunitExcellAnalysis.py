@@ -18,8 +18,12 @@ def plot_waveform(data,
         plt.figure(figsize=(16,9))
     unit = get_unit(data)
     wave = unit.spiketrains[0].waveforms
-    t = np.linspace(0,1,50)*qt.s
+    t = np.linspace(0,1,50)*qt.ms
     if spikenum is not None and channel is None:
+        if spikenum >= wave.shape[0]:
+            spikenum = wave.shape[0]-1
+            print ('You have asked for a spikenum which is larger than the number\
+             of spikes in this spiketrain, reseting spikenum to %i'%spikenum)
         wave = wave[spikenum,:,:]
         label = ['ch0','ch1','ch3','ch4']
     if channel is not None and spikenum is None:
@@ -36,10 +40,77 @@ def plot_waveform(data,
     else:
         h = plt.plot(t,wave.T)
     #if not normalize:
-    plt.ylabel(wave.dimensionality,fontsize=fontsize)
-    plt.xlabel(t.dimensionality,fontsize=fontsize)
+    plt.ylabel(wave.dimensionality, fontsize=fontsize)
+    plt.xlabel(t.dimensionality, fontsize=fontsize)
     if type(label) is list:
-        plt.legend(h,label,fontsize=fontsize)
+        plt.legend(h,label, fontsize=fontsize)
+
+def plot_spiketrain(data,
+                    raster=True,
+                    histogram=False,
+                    rectangular=False,
+                    gaussian=False,
+                    causal=False,
+                    sigma=1,
+                    t_start=0,
+                    t_stop=None,
+                    fontsize=16,
+                    ):
+    unit = get_unit(data)
+    spikes = unit.spiketrains[0]
+    if t_stop is None:
+        t_stop = spikes.max()
+    spikes = spikes.time_slice(t_start,t_stop)
+    nplt = sum([raster,histogram,rectangular,gaussian,causal])
+    if not raster or nplt > 1:
+        f = plt.figure(figsize=(16,9))
+
+    #raster
+    if raster:
+        if nplt == 1:
+            f = plt.figure(figsize=(16,3))
+        ax = f.add_subplot(nplt,1,1)
+        ax.set_title('$N_{tot} = %i$'%len(spikes), fontsize=fontsize)
+        for s in spikes.magnitude:
+            ax.vlines(s, 0, 1, color = 'b')
+
+        plt.ylim(-.1,1.1)
+        if nplt > 1:
+            ax.set_xticks([])
+        else:
+            ax.set_xlabel(spikes.dimensionality, fontsize=fontsize)
+        ax.set_yticks([])
+    #count rate
+    if histogram:
+        ax = f.add_subplot(nplt,1,1+raster)
+        nbins = spikes.magnitude.max() / sigma
+        ns, bs = np.histogram(spikes, nbins)
+        ax.bar(bs[0:-1], ns/sigma, width = bs[1]-bs[0])
+        ax.set_ylabel((qt.Hz).dimensionality, fontsize=fontsize)
+        if nplt > 2:
+            ax.set_xticks([])
+        else:
+            ax.set_xlabel(spikes.dimensionality, fontsize=fontsize)
+    #instantaneuos rate
+    if rectangular | gaussian | causal:
+        wins = []
+        if rectangular:
+            wins.append(rectangularWindow)
+        if gaussian:
+            wins.append(gaussianWindow)
+        if causal:
+            wins.append(causalWindow)
+        for n, win in enumerate(wins):
+            ax = f.add_subplot(nplt,1,n+1+raster+histogram)
+            r, t = instantaneous_rate(spikes, sigma, win, fs=1e3)
+            ax.plot(t, r)
+            ax.set_ylabel(r.dimensionality, fontsize=fontsize)
+
+            if n != len(wins) - 1:
+                ax.set_xticks([])
+            else:
+                ax.set_xlabel(t.dimensionality, fontsize=fontsize)
+
 
 def normalize_signal(inp, normtype='minmax'):
     if normtype == 'minmax':
@@ -94,7 +165,7 @@ def get_unit(data):
                 if unit.name == data['unit']:
                     return unit
 
-def raster(spikes,ax):
+def raster_plot(spikes,ax):
     """
     Raster plot
     """
