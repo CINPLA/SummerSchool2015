@@ -28,7 +28,7 @@ def plot_waveform(data,
             print ('You have asked for a spikenum which is larger than the number\
              of spikes in this spiketrain, reseting spikenum to %i'%spikenum)
         wave = wave[spikenum,:,:]
-        label = ['ch0','ch1','ch3','ch4']
+        label = ['ch0','ch1','ch2','ch3']
     if channel is not None and spikenum is None:
         wave = wave[:,channel,:]
     if spikenum is not None and channel is not None:
