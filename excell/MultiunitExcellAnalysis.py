@@ -75,6 +75,7 @@ def plot_spiketrain(data,
             f = plt.figure(figsize=(16,3))
         ax = f.add_subplot(nplt,1,1)
         ax.set_title('$N_{tot} = %i$'%len(spikes), fontsize=fontsize)
+        ax.set_ylabel('fake to get innset', fontsize=fontsize, alpha=0)
         for s in spikes.magnitude:
             ax.vlines(s, 0, 1, color = 'b')
 
@@ -84,7 +85,7 @@ def plot_spiketrain(data,
         else:
             ax.set_xlabel(spikes.dimensionality, fontsize=fontsize)
         ax.set_yticks([])
-        simpleaxis(ax, left=True)
+        simpleaxis(ax, left=False)
     #count rate
     if histogram:
         ax = f.add_subplot(nplt,1,1+raster)
@@ -118,14 +119,13 @@ def plot_spiketrain(data,
                 ax.set_xlabel(t.dimensionality, fontsize=fontsize)
             simpleaxis(ax)
 
-def simpleaxis(ax, left=False):
+def simpleaxis(ax, left=True, right=False, top=False):
     """
     Removes axis lines
     """
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    if left:
-        ax.spines['left'].set_visible(False)
+    ax.spines['top'].set_visible(top)
+    ax.spines['right'].set_visible(right)
+    ax.spines['left'].set_visible(left)
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
 
