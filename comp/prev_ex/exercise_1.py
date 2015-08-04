@@ -69,4 +69,3 @@ plt.plot(cell.tvec, cl_soma.i, c=cell_plot_colors[soma_idx], lw=2)
 plt.plot(cell.tvec, cl_apic.i, '--', c=cell_plot_colors[apic_idx], lw=2)
 
 plt.savefig('exercise_1.png')
-
