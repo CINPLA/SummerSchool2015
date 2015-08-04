@@ -36,7 +36,7 @@ def plot_waveform(data,
     if meanspikes:
         wave = np.mean(wave, axis=0)
     if normalize:
-        wave = normalize_signal(wave,'minmax')
+        wave = normalize_signal(wave,normalize)
     if type(label) is str:
         h = plt.plot(t,wave.T, label=label)
         plt.legend(fontsize=fontsize)
