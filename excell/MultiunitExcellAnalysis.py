@@ -49,13 +49,15 @@ def plot_waveform(data,
         plt.legend(h,label, fontsize=fontsize)
     simpleaxis(ax)
 
-def plot_spiketrain(data,
+def plot_spikedata(data,
                     raster=True,
                     histogram=False,
                     rectangular=False,
                     gaussian=False,
                     causal=False,
+                    slidwin=False,
                     sigma=1,
+                    winStep=10e-3,
                     t_start=0,
                     t_stop=None,
                     fontsize=16,
@@ -65,7 +67,7 @@ def plot_spiketrain(data,
     if t_stop is None:
         t_stop = spikes.max()
     spikes = spikes.time_slice(t_start,t_stop)
-    nplt = sum([raster,histogram,rectangular,gaussian,causal])
+    nplt = sum([raster,histogram,rectangular,gaussian,causal,slidwin])
     if not raster or nplt > 1:
         f = plt.figure(figsize=(16,9))
 
@@ -98,6 +100,17 @@ def plot_spiketrain(data,
         else:
             ax.set_xlabel(spikes.dimensionality, fontsize=fontsize)
         simpleaxis(ax)
+    #sliding window
+    if slidwin:
+        ax = f.add_subplot(nplt,1,+raster+histogram+1)
+        r, t = SNFiringRate(spikes, winStep, sigma)
+        ax.plot(t, r)
+        ax.set_ylabel(r.dimensionality, fontsize=fontsize)
+        if nplt > 3:
+            ax.set_xticks([])
+        else:
+            ax.set_xlabel(t.dimensionality, fontsize=fontsize)
+        simpleaxis(ax)
     #instantaneuos rate
     if rectangular | gaussian | causal:
         wins = []
@@ -108,12 +121,12 @@ def plot_spiketrain(data,
         if causal:
             wins.append(causalWindow)
         for n, win in enumerate(wins):
-            ax = f.add_subplot(nplt,1,n+1+raster+histogram)
+            ax = f.add_subplot(nplt,1,n+1+raster+histogram+slidwin)
             r, t = instantaneous_rate(spikes, sigma, win, fs=1e3)
             ax.plot(t, r)
             ax.set_ylabel(r.dimensionality, fontsize=fontsize)
 
-            if n != len(wins) - 1:
+            if n != len(wins) - 1 and slidwin:
                 ax.set_xticks([])
             else:
                 ax.set_xlabel(t.dimensionality, fontsize=fontsize)
@@ -134,6 +147,24 @@ def normalize_signal(inp, normtype='minmax'):
         return (inp - inp.min())/np.max(inp - inp.min())
     elif normtype == 'meanstd':
         return (inp - np.mean(inp))/np.std(inp)
+
+def SNFiringRate(spikeTimes, dt, winLen):
+    '''
+    Compute a windowed firing rate from action potential times
+    spikeTimes  Spike timestamps (should be ordered)
+    dt          Sliding window step (s)
+    winLen      Sliding windown length (s)
+    '''
+    szRate = int((spikeTimes[-1])/dt)+1
+    r = np.ndarray((szRate, ))
+    times = np.ndarray(szRate)
+    for t_i in xrange(szRate):
+        t = t_i*dt
+        r[t_i] = np.sum(np.logical_and(spikeTimes > t-winLen/2, spikeTimes <
+            t+winLen/2))
+        times[t_i] = t
+
+    return (r/winLen*qt.Hz, times*qt.s)
 
 def instantaneous_rate(spikes, dt, window, fs=1e4):
     '''
