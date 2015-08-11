@@ -50,7 +50,7 @@ def exercise1(cell_parameters, soma_clamp_params, apic_clamp_params):
     plt.plot(cell.tvec, cl_soma.i, c=cell_plot_colors[soma_clamp_params['idx']], lw=2)
     plt.plot(cell.tvec, cl_apic.i, '--', c=cell_plot_colors[apic_clamp_params['idx']], lw=2)
 
-def exercise2(cell_parameters, soma_clamp_params, apic_clamp_params, electrode_parameters):
+def exercise2(cell_parameters, soma_clamp_params, apic_clamp_params, electrode_parameters, noise_level):
     ### MAKING THE CELL
     cell = LFPy.Cell(**cell_parameters)
 
@@ -90,19 +90,12 @@ def exercise2(cell_parameters, soma_clamp_params, apic_clamp_params, electrode_p
     plt.plot(cell.tvec, cl_apic.i, '--', c=cell_idx_colors[apic_clamp_params['idx']], lw=2)
 
     # Plotting the extracellular potentials
-    plt.subplot(243, title='Extracellular\npotentials', xlabel='Time [ms]', ylabel='mV', xlim=[9, 18])
-    [plt.plot(cell.tvec, electrode.LFP[idx], c=elec_idx_colors[idx], lw=2) for idx in xrange(len(electrode_parameters['x']))]
+    LFP = 1000 * electrode.LFP + noise_level * (np.random.random(electrode.LFP.shape) - 0.5)
 
-    norm_LFP = [electrode.LFP[idx] - electrode.LFP[idx, 0] for idx in xrange(len(electrode_parameters['x']))]
+    plt.subplot(243, title='Extracellular\npotentials', xlabel='Time [ms]', ylabel='$\mu$V', xlim=[9, 18])
+    [plt.plot(cell.tvec, LFP[idx], c=elec_idx_colors[idx], lw=2) for idx in xrange(len(electrode_parameters['x']))]
+
+    norm_LFP = [LFP[idx] - LFP[idx, 0] for idx in xrange(len(electrode_parameters['x']))]
     plt.subplot(247, title='Extracellular\npotentials', xlabel='Time [ms]', ylabel='Normalized', xlim=[9, 18])
     [plt.plot(cell.tvec, norm_LFP[idx] / np.max(np.abs(norm_LFP[idx])), c=elec_idx_colors[idx], lw=2) for idx in xrange(len(electrode_parameters['x']))]
 
-    LFP_amplitude_decay = np.max(electrode.LFP, axis=1) - np.min(electrode.LFP, axis=1)
-
-    plt.subplot(244, title='Extracellular\npotential decay', xlabel='x [$\mu m$]', ylabel='mV')
-    plt.plot(-electrode_parameters['x'], LFP_amplitude_decay)
-    plt.grid(True)
-
-    plt.subplot(248, title='Extracellular\npotential decay', xlabel='x [$\mu m$]', ylabel='Normalized', ylim=[0, 1.1])
-    plt.plot(-electrode_parameters['x'], LFP_amplitude_decay / np.max(LFP_amplitude_decay))
-    plt.grid(True)
