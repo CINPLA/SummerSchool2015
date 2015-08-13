@@ -45,16 +45,16 @@ def exercise1(soma_clamp_params, apic_clamp_params):
     cell.simulate(rec_imem=True, rec_vmem=True, rec_istim=True)
 
     ### PLOTTING THE RESULTS
-    cell_plot_idxs = [soma_clamp_params['idx'], apic_clamp_params['idx']]
-    cell_plot_colors = {soma_clamp_params['idx']: 'b',
-                        apic_clamp_params['idx']: 'g'}
+    cell_plot_idxs = [soma_clamp_params['idx'], apic_clamp_params['idx']]    
+    cell_plot_colors = {cell_plot_idxs[idx]: plt.cm.Greens_r(1./(len(cell_plot_idxs) + 1) * idx + 0.1) for idx in range(len(cell_plot_idxs))}
+
 
     # Plotting the morphology
     plt.figure(figsize=(16,9))
     plt.subplots_adjust(hspace=0.5)
-    plt.subplot(121, aspect='equal', xlabel='x [$\mu m$]', ylabel='y [$\mu m$]', xlim=[-400, 400], xticks=[-400, 0, 400])
+    plt.subplot(121, aspect='equal', xlabel='x [$\mu m$]', ylabel='y [$\mu m$]', xlim=[-400, 400], xticks=[-400, 0, 400], title='Green dots: Inputs')
     [plt.plot([cell.xstart[idx], cell.xend[idx]], [cell.ystart[idx], cell.yend[idx]], c='k') for idx in xrange(cell.totnsegs)]
-    [plt.plot(cell.xmid[idx], cell.ymid[idx], 'o', c=cell_plot_colors[idx], ms=7) for idx in cell_plot_idxs]
+    [plt.plot(cell.xmid[idx], cell.ymid[idx], 'o', c=cell_plot_colors[idx], ms=12) for idx in cell_plot_idxs]
 
     # Plotting the membrane potentials
     plt.subplot(222, title='Membrane potential', xlabel='Time [ms]', ylabel='mV', ylim=[-80, 20])
@@ -96,16 +96,17 @@ def exercise2(soma_clamp_params, apic_clamp_params, electrode_parameters, noise_
 
     ### PLOTTING THE RESULTS
     cell_plot_idxs = [soma_clamp_params['idx'], apic_clamp_params['idx']]
-    cell_idx_colors = {cell_plot_idxs[idx]: plt.cm.Blues_r(1./(len(cell_plot_idxs) + 1) * idx) for idx in range(len(cell_plot_idxs))}
+    cell_idx_colors = {cell_plot_idxs[idx]: plt.cm.Greens_r(1./(len(cell_plot_idxs) + 1) * idx + 0.1) for idx in range(len(cell_plot_idxs))}
     elec_idx_colors = {idx: plt.cm.Reds_r(1./(len(electrode_parameters['x']) + 1) * idx) for idx in range(len(electrode_parameters['x']))}
 
     plt.figure(figsize=(16,9))
     # Plotting the morphology
     plt.subplots_adjust(hspace=0.5, wspace=0.5)
-    plt.subplot(141, aspect='equal', xlabel='x [$\mu m$]', ylabel='y [$\mu m$]', xlim=[-400, 400], xticks=[-400, 0, 400])
+    plt.subplot(141, aspect='equal', xlabel='x [$\mu m$]', ylabel='y [$\mu m$]', xlim=[-400, 400], xticks=[-400, 0, 400], 
+                title='Green dots: Inputs\nRed diamonds: Extracellular electrodes')
     [plt.plot([cell.xstart[idx], cell.xend[idx]], [cell.ystart[idx], cell.yend[idx]], c='k') for idx in xrange(cell.totnsegs)]
-    [plt.plot(cell.xmid[idx], cell.ymid[idx], 'o', c=cell_idx_colors[idx], ms=7) for idx in cell_plot_idxs]
-    [plt.plot(electrode_parameters['x'][idx], electrode_parameters['y'][idx], 'D', c=elec_idx_colors[idx], ms=7) for idx in xrange(len(electrode_parameters['x']))]
+    [plt.plot(cell.xmid[idx], cell.ymid[idx], 'o', c=cell_idx_colors[idx], ms=12) for idx in cell_plot_idxs]
+    [plt.plot(electrode_parameters['x'][idx], electrode_parameters['y'][idx], 'D', c=elec_idx_colors[idx], ms=12) for idx in xrange(len(electrode_parameters['x']))]
 
     # Plotting the membrane potentials
     plt.subplot(242, title='Membrane\npotential', xlabel='Time [ms]', ylabel='mV', ylim=[-80, 20])
@@ -193,9 +194,9 @@ def exercise3(model, input_y_pos):
     #
     plt.figure()
     plt.subplots_adjust(left=0.25)
-    plt.subplot(111, aspect=1, xlabel='x [$\mu$m]', ylabel='y [$\mu$m]', title='Snapshot of LFP at time of maximum\nsomatic membrane potential')
+    plt.subplot(111, aspect=1, xlabel='x [$\mu$m]', ylabel='y [$\mu$m]', title='Snapshot of LFP at time of maximum\nsomatic membrane potential.\nInput marked by green dot')
     [plt.plot([cell.xstart[idx], cell.xend[idx]], [cell.ystart[idx], cell.yend[idx]], c='k') for idx in xrange(cell.totnsegs)]
-    plt.plot(cell.xmid[cell.synidx], cell.ymid[cell.synidx], 'y*', markersize=10)
+    plt.plot(cell.xmid[cell.synidx], cell.ymid[cell.synidx], 'go', markersize=12)
     #
     center_electrode_idx = np.argmin(elec_x**2 + elec_y**2 + elec_z**2)
     #
@@ -297,10 +298,11 @@ def exercise4(electrode_parameters, input_y_pos):
     plt.figure(figsize=(16,9))
     # Plotting the morphology
     plt.subplots_adjust(hspace=0.5, wspace=0.5)
-    plt.subplot(141, aspect='equal', xlabel='x [$\mu m$]', ylabel='y [$\mu m$]', xlim=[-400, 400], xticks=[-400, 0, 400])
+    plt.subplot(141, aspect='equal', xlabel='x [$\mu m$]', ylabel='y [$\mu m$]', xlim=[-400, 400], xticks=[-400, 0, 400], 
+                title='Green dots: Inputs\nRed diamonds: Extracellular electrodes')
     [plt.plot([cell.xstart[idx], cell.xend[idx]], [cell.ystart[idx], cell.yend[idx]], c='k') for idx in xrange(cell.totnsegs)]
-    plt.plot(cell.xmid[input_idx], cell.ymid[input_idx], 'o', c=cell_input_color, ms=7)
-    [plt.plot(electrode_parameters['x'][idx], electrode_parameters['y'][idx], 'D', c=elec_idx_colors[idx], ms=7) for idx in xrange(len(electrode_parameters['x']))]
+    plt.plot(cell.xmid[input_idx], cell.ymid[input_idx], 'o', c=cell_input_color, ms=15)
+    [plt.plot(electrode_parameters['x'][idx], electrode_parameters['y'][idx], 'D', c=elec_idx_colors[idx], ms=15) for idx in xrange(len(electrode_parameters['x']))]
 
     # Plotting the membrane potentials
     plt.subplot(242, title='Input current', xlabel='Time [ms]', ylabel='nA')
