@@ -12,7 +12,11 @@ def plot_waveform(data,
                   channel=0,
                   spikenum=None,
                   compare=False,
-                  fontsize=16,
+                  color='b',
+                  lw=2,
+                  invert=1,
+                  save=False,
+                  save_format='pdf',
                   ):
     if not compare:
         f = plt.figure(figsize=(16,9))
@@ -38,16 +42,24 @@ def plot_waveform(data,
     if normalize:
         wave = normalize_signal(wave,normalize)
     if type(label) is str:
-        h = plt.plot(t,wave.T, label=label)
-        plt.legend(fontsize=fontsize)
+        plt.plot(t,invert*wave.T,label=label, color=color,lw=lw)
+        handles, labels = ax.get_legend_handles_labels()
+        labels, ind = np.unique(labels, return_index=True)
+        if invert == 1:
+            loc = 1
+        else:
+            loc = 4
+        plt.legend(np.array(handles)[ind],labels, loc=loc)
     else:
-        h = plt.plot(t,wave.T)
+        h = plt.plot(t,invert*wave.T)
     #if not normalize:
-    plt.ylabel(wave.dimensionality, fontsize=fontsize)
-    plt.xlabel(t.dimensionality, fontsize=fontsize)
+    plt.ylabel('$Voltage\, [%s]$'%wave.dimensionality)
+    plt.xlabel('$Time\, [%s]$'%t.dimensionality)
     if type(label) is list:
-        plt.legend(h,label, fontsize=fontsize)
+        plt.legend(h,label)
     simpleaxis(ax)
+    if save:
+        plt.savefig(save+'.'+save_format,format=save_format)
 
 def plot_spikedata(data,
                     raster=True,
@@ -76,8 +88,8 @@ def plot_spikedata(data,
         if nplt == 1:
             f = plt.figure(figsize=(16,3))
         ax = f.add_subplot(nplt,1,1)
-        ax.set_title('$N_{tot} = %i$'%len(spikes), fontsize=fontsize)
-        ax.set_ylabel('fake to get innset', fontsize=fontsize, alpha=0)
+        ax.set_title('$N_{tot} = %i$'%len(spikes))
+        ax.set_ylabel('fake to get innset', alpha=0)
         for s in spikes.magnitude:
             ax.vlines(s, 0, 1, color = 'b')
 
@@ -85,7 +97,7 @@ def plot_spikedata(data,
         if nplt > 1:
             ax.set_xticks([])
         else:
-            ax.set_xlabel(spikes.dimensionality, fontsize=fontsize)
+            ax.set_xlabel(spikes.dimensionality)
         ax.set_yticks([])
         simpleaxis(ax, left=False)
     #count rate
@@ -94,22 +106,22 @@ def plot_spikedata(data,
         nbins = spikes.magnitude.max() / sigma
         ns, bs = np.histogram(spikes, nbins)
         ax.bar(bs[0:-1], ns/sigma, width = bs[1]-bs[0])
-        ax.set_ylabel((qt.Hz).dimensionality, fontsize=fontsize)
+        ax.set_ylabel((qt.Hz).dimensionality)
         if nplt > 2:
             ax.set_xticks([])
         else:
-            ax.set_xlabel(spikes.dimensionality, fontsize=fontsize)
+            ax.set_xlabel(spikes.dimensionality)
         simpleaxis(ax)
     #sliding window
     if slidwin:
         ax = f.add_subplot(nplt,1,+raster+histogram+1)
         r, t = SNFiringRate(spikes, winStep, sigma)
         ax.plot(t, r)
-        ax.set_ylabel(r.dimensionality, fontsize=fontsize)
+        ax.set_ylabel(r.dimensionality)
         if nplt > 3:
             ax.set_xticks([])
         else:
-            ax.set_xlabel(t.dimensionality, fontsize=fontsize)
+            ax.set_xlabel(t.dimensionality)
         simpleaxis(ax)
     #instantaneuos rate
     if rectangular | gaussian | causal:
@@ -124,12 +136,12 @@ def plot_spikedata(data,
             ax = f.add_subplot(nplt,1,n+1+raster+histogram+slidwin)
             r, t = instantaneous_rate(spikes, sigma, win, fs=1e3)
             ax.plot(t, r)
-            ax.set_ylabel(r.dimensionality, fontsize=fontsize)
+            ax.set_ylabel(r.dimensionality)
 
             if n != len(wins) - 1 and slidwin:
                 ax.set_xticks([])
             else:
-                ax.set_xlabel(t.dimensionality, fontsize=fontsize)
+                ax.set_xlabel(t.dimensionality)
             simpleaxis(ax)
 
 def simpleaxis(ax, left=True, right=False, top=False):
